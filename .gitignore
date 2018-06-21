@@ -1,0 +1,18 @@
+# data
+data/*
+
+# Jupyter notebook
+.ipynb_checkpoints
+
+# Python, Cython
+*.pyc
+
+# MacOS things
+.DS_store
+
+# Model created things
+reports/*
+inference_model/*
+
+$ VSCode
+.vscode/*
