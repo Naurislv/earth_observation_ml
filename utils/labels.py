@@ -37,10 +37,9 @@ class Labels(GisDB):
         """Fill NaN vallues for given columns."""
 
         if self._species is None:
-            print('AAA')
 
             data = self.data.copy()
-            logging.info('Input data shape: %s', data.shape)
+            logging.debug('Input data shape: %s', data.shape)
 
             data['s2'].fillna(-1, inplace=True)
             data['s2'] = data['s2'].astype(int)
@@ -53,15 +52,15 @@ class Labels(GisDB):
             class_names = [i for i in self.nb_class if self.nb_class[i] >= self._specie_threshold]
             class_ids = [self.class_maps_inv[cls] for cls in class_names]
 
-            logging.info('Selecting following class names: %s', class_names)
-            logging.info('Selecting following class ids: %s', class_ids)
+            logging.debug('Selecting following class names: %s', class_names)
+            logging.debug('Selecting following class ids: %s', class_ids)
 
             data.loc[~data.s1.isin(class_ids + [-1]), 's1'] = 99
             data.loc[~data.s2.isin(class_ids + [-1]), 's2'] = 99
             data.loc[~data.s3.isin(class_ids + [-1]), 's3'] = 99
 
             class_ids = sorted(class_ids + [99])
-            logging.info("Number of classes including 'others': %s", len(class_ids))
+            logging.debug("Number of classes including 'others': %s", len(class_ids))
 
             # For classifying species we don't same class in different part, so let's sum them
             for p_0, p_1 in [('1', '2'), ('1', '3'), ('2', '3')]:
