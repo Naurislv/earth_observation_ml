@@ -22,26 +22,29 @@ class GisDB():
 
         self._class_maps = None
         self._nb_class = None
-        self._dataset = None
+        self._data = None
 
     @property
     def class_maps(self):
         """Return class name mappings to IDs."""
 
         if self._class_maps is None:
-            self.cur.execute("SELECT c.classid::int, c.name::text "
-                             "FROM lvm_tree_classes as c ")
 
-            class_maps = {}
-
-            for row in self.cur:
-                class_id = row[0]
-                class_name = row[1]
-                class_maps[class_id] = class_name.replace('\t', '')
-
+            class_maps = self._get_class_maps()
             self._class_maps = class_maps
 
         return self._class_maps
+
+    @property
+    def class_maps_inv(self):
+        """Return ID mappings to class names."""
+
+        if self._class_maps is None:
+
+            class_maps = self._get_class_maps()
+            self._class_maps = class_maps
+
+        return {v: k for k, v in self._class_maps.items()}
 
     @property
     def nb_class(self):
@@ -64,10 +67,10 @@ class GisDB():
         return self._nb_class
 
     @property
-    def dataset(self):
+    def data(self):
         """Return all dataset as pandas dataframe."""
 
-        if self._dataset is None:
+        if self._data is None:
             self.cur.execute("SELECT objectid::int, "
                              "s10::int,      s11::int,      s12::int, "
                              "k10/10::float, k11/10::float, k12/10::float, "
@@ -82,7 +85,7 @@ class GisDB():
             for row in self.cur:
                 data.append(list(row))
 
-            self._dataset = pd.DataFrame(
+            self._data = pd.DataFrame(
                 data,
                 columns=[
                     'objectid',
@@ -94,4 +97,18 @@ class GisDB():
                     ]
             )
 
-        return self._dataset
+        return self._data
+
+    def _get_class_maps(self):
+        """Query class mapping data from DB."""
+        self.cur.execute("SELECT c.classid::int, c.name::text "
+                         "FROM lvm_tree_classes as c ")
+
+        class_maps = {}
+
+        for row in self.cur:
+            class_id = row[0]
+            class_name = row[1]
+            class_maps[class_id] = class_name.replace('\t', '')
+
+        return class_maps
