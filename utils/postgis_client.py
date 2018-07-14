@@ -18,7 +18,7 @@ class GisDB():
         password = '8r3tFXUntQeY'
 
         conn = psycopg2.connect(f"dbname={dbname} host={host} user={user} password={password}")
-        self.cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        self._cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         self._class_maps = None
         self._nb_class = None
@@ -51,15 +51,15 @@ class GisDB():
         """Return each main class distribution over dataset."""
 
         if self._nb_class is None:
-            self.cur.execute("SELECT count(m.s10) as skaits, c.name as suga FROM "
-                             "lvm_data_all as m, lvm_tree_classes as c "
-                             "WHERE m.s10=c.classid "
-                             "GROUP BY c.name "
-                             "ORDER BY skaits DESC;")
+            self._cur.execute("SELECT count(m.s10) as skaits, c.name as suga FROM "
+                              "lvm_data_all as m, lvm_tree_classes as c "
+                              "WHERE m.s10=c.classid "
+                              "GROUP BY c.name "
+                              "ORDER BY skaits DESC;")
 
             nb_class = {}
 
-            for row in self.cur:
+            for row in self._cur:
                 nb_class[row[1].replace('\t', '')] = row[0]
 
             self._nb_class = nb_class
@@ -71,18 +71,18 @@ class GisDB():
         """Return all dataset as pandas dataframe."""
 
         if self._data is None:
-            self.cur.execute("SELECT objectid::int, "
-                             "s10::int,      s11::int,      s12::int, "
-                             "k10/10::float, k11/10::float, k12/10::float, "
-                             "h10::float,    h11::float,    h12::float, "
-                             "a10::int,      a11::int,      a12::int, "
-                             "v10::float,    v11::float,    v12::float "
-                             "FROM lvm_data_all "
-                             "WHERE s10 IS NOT NULL;")
+            self._cur.execute("SELECT objectid::int, "
+                              "s10::int,      s11::int,      s12::int, "
+                              "k10/10::float, k11/10::float, k12/10::float, "
+                              "h10::float,    h11::float,    h12::float, "
+                              "a10::int,      a11::int,      a12::int, "
+                              "v10::float,    v11::float,    v12::float "
+                              "FROM lvm_data_all "
+                              "WHERE s10 IS NOT NULL;")
 
             data = []
 
-            for row in self.cur:
+            for row in self._cur:
                 data.append(list(row))
 
             self._data = pd.DataFrame(
@@ -101,12 +101,12 @@ class GisDB():
 
     def _get_class_maps(self):
         """Query class mapping data from DB."""
-        self.cur.execute("SELECT c.classid::int, c.name::text "
-                         "FROM lvm_tree_classes as c ")
+        self._cur.execute("SELECT c.classid::int, c.name::text "
+                          "FROM lvm_tree_classes as c ")
 
         class_maps = {}
 
-        for row in self.cur:
+        for row in self._cur:
             class_id = row[0]
             class_name = row[1]
             class_maps[class_id] = class_name.replace('\t', '')
