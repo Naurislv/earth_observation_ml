@@ -14,6 +14,7 @@ from sklearn.metrics import confusion_matrix
 def plot_confusion_matrix(flat_labels, flat_preds, target_names,
                           title='Confusion matrix', cmap=plt.cm.Blues, # pylint: disable=E1101
                           save_path=None, percent=True):
+
     """Plot confusion matrix."""
 
     bin_n = np.bincount(flat_labels.astype(np.int64))
@@ -54,7 +55,7 @@ def plot_confusion_matrix(flat_labels, flat_preds, target_names,
         print('Confusion Matrix graph saved to ' + save_path)
         plt.savefig(save_path)
 
-def pim(images, titles=None, cols=0, cmap='gray', interpolation='none'):
+def pim(images, titles=None, cols=0, cmap=None, interpolation='none'):
     """Plot Image.
 
     Display one or more images in one row without blocking.
