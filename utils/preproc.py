@@ -82,19 +82,20 @@ def add_vegetation(data, nb_b8a, nb_b11, nb_b4):
 
     data_veg = data.copy()
 
-    b_8a = data_veg[:, :, :, :, nb_b8a: nb_b8a + 1]
-    b_11 = data_veg[:, :, :, :, nb_b11: nb_b11 + nb_b11]
-    b_4 = data_veg[:, :, :, :, nb_b4: nb_b4 + 1]
+    b_8a = data_veg[..., nb_b8a: nb_b8a + 1]
+    b_11 = data_veg[..., nb_b11: nb_b11 + 1]
+    b_4 = data_veg[..., nb_b4: nb_b4 + 1]
 
-    ndvi = (b_8a - b_4) / (b_8a + b_4 + 0.001)
-    ndwi = (b_8a - b_11) / (b_8a + b_11 + 0.001)
+    mask = ((b_8a > 0) & (b_11 > 0) & (b_4 > 0))
 
-    # When you deal with zero, you get inf., we need correct this
-    nan_ndvi = np.isnan(ndvi)
-    nan_ndwi = np.isnan(ndwi)
+    ndvi = np.zeros_like(data[..., -1:])
+    ndwi = np.zeros_like(data[..., -1:])
 
-    logging.info('Number of ndvi nan values %d', np.sum(nan_ndvi))
-    logging.info('Number of ndwi nan values %d', np.sum(nan_ndwi))
+    # NDVI = (Band 8A - Band 4) / (Band 8A + Band 4)
+    # NDWI = (Band 8A - Band 11) / (Band 8A + Band 11)
+    # paper: https://goo.gl/MLtcCx
+    ndvi[mask] = (b_8a[mask] - b_4[mask]) / (b_8a[mask] + b_4[mask])
+    ndwi[mask] = (b_8a[mask] - b_11[mask]) / (b_8a[mask] + b_11[mask])
 
     data_veg = np.concatenate((data_veg, ndvi), axis=-1)
     data_veg = np.concatenate((data_veg, ndwi), axis=-1)
